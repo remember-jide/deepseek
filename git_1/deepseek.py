@@ -35,13 +35,20 @@ client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_BASE_URL)
 # ==================== 嵌入模型（本地加载） ====================
 @st.cache_resource
 def load_embedding():
+    model_path = "./local_embedding"
+    if os.path.exists(model_path):
+        # 本地有模型，直接加载
+        model_name = model_path
+    else:
+        # 云端没有本地模型，从 HuggingFace 下载（使用国内镜像加速）
+        model_name = "sentence-transformers/paraphrase-MiniLM-L6-v2"
+        os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
+
     return HuggingFaceEmbeddings(
-        model_name="./local_embedding",   # 指向本地文件夹
+        model_name=model_name,
         model_kwargs={'device': 'cpu'},
         encode_kwargs={'normalize_embeddings': True}
     )
-
-
 embedding = load_embedding()
 
 # ==================== Streamlit 界面 ====================
